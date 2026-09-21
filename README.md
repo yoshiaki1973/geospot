@@ -1,0 +1,2 @@
+# geospot
+カレー屋のMap
