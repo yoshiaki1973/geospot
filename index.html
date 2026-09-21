@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoSpot Studio - 高機能地図データ登録システム</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+  <!-- App CSS Files -->
+  <link rel="stylesheet" href="css/main.css?v=14.0">
+  <link rel="stylesheet" href="css/map.css?v=14.0">
+  <link rel="stylesheet" href="css/components.css?v=14.0">
+</head>
+<body class="light-theme">
+
+  <div class="app-container">
+    <!-- Header Navbar -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="brand-text">
+          <h1>GeoSpot <span>Curry</span></h1>
+          <p class="tagline">東京カレー名店マップ (200選) & データ管理</p>
+        </div>
+      </div>
+
+      <div class="search-bar-container">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="geocoder-input" placeholder="都市・住所・ランドマークを検索 (例: 東京タワー, 京都駅)...">
+        <button id="geocoder-btn" title="検索"><i class="fa-solid fa-arrow-right"></i></button>
+        <div id="geocoder-results" class="geocoder-results hidden"></div>
+      </div>
+
+      <div class="header-actions">
+        <button id="toggle-sidebar-btn" class="btn btn-icon" title="サイドバー切替">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <button id="theme-toggle-btn" class="btn btn-icon" title="テーマ切り替え">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <!-- Stats Summary Section -->
+        <section class="stats-section">
+          <div class="stats-card">
+            <div class="stat-item">
+              <span class="stat-value" id="stat-total">0</span>
+              <span class="stat-label">登録スポット</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-value" id="stat-visited">0</span>
+              <span class="stat-label">訪問済み</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-value" id="stat-wishlist">0</span>
+              <span class="stat-label">行きたい</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Filter & Search Controls -->
+        <section class="filter-section">
+          <div class="search-box">
+            <i class="fa-solid fa-filter"></i>
+            <input type="text" id="filter-keyword" placeholder="リスト内キーワード検索...">
+          </div>
+
+          <div class="filter-controls">
+            <div class="filter-group flex-1">
+              <label for="filter-status">ステータス</label>
+              <select id="filter-status">
+                <option value="all">すべて</option>
+                <option value="visited">訪問済み</option>
+                <option value="wishlist">行きたい</option>
+                <option value="favorite">お気に入り</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Spots List Header -->
+        <div class="spots-header">
+          <h3><i class="fa-solid fa-list-check"></i> スポット一覧 (<span id="spots-count">0</span>)</h3>
+          <select id="sort-select" class="sort-select">
+            <option value="newest">新しい順</option>
+            <option value="oldest">古い順</option>
+            <option value="rating">評価が高い順</option>
+            <option value="title">名前順</option>
+          </select>
+        </div>
+
+        <!-- Spots List Items -->
+        <div id="spots-list" class="spots-list">
+          <div class="empty-state">
+            <i class="fa-solid fa-location-dot empty-icon"></i>
+            <p>スポットが登録されていません</p>
+            <small>地図上をクリックするか「新規スポット登録」ボタンから追加してください。</small>
+          </div>
+        </div>
+
+        <!-- Data Import/Export Footer -->
+        <div class="sidebar-footer">
+          <button id="export-data-btn" class="btn btn-sm btn-secondary" title="データ出力">
+            <i class="fa-solid fa-download"></i> エクスポート
+          </button>
+          <label for="import-file" class="btn btn-sm btn-secondary" title="データ読み込み">
+            <i class="fa-solid fa-upload"></i> インポート
+            <input type="file" id="import-file" accept=".json,.geojson,.csv" style="display: none;">
+          </label>
+          <button id="clear-data-btn" class="btn btn-sm btn-danger-icon" title="全データ削除">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Map Display Area -->
+      <section class="map-wrapper">
+        <div id="map" class="map-container"></div>
+
+        <!-- Map Floating Controls -->
+        <div class="map-floating-controls">
+          <button id="locate-btn" class="floating-btn" title="現在地に移動">
+            <i class="fa-solid fa-crosshairs"></i>
+          </button>
+          <div class="map-layer-selector">
+            <button id="layer-menu-btn" class="floating-btn" title="マップスタイル変更">
+              <i class="fa-solid fa-layer-group"></i>
+            </button>
+            <div id="layer-menu-dropdown" class="layer-dropdown hidden">
+              <label><input type="radio" name="basemap" value="osm" checked> OpenStreetMap (標準)</label>
+              <label><input type="radio" name="basemap" value="dark"> Esri ダークキャンバス</label>
+              <label><input type="radio" name="basemap" value="light"> Esri ライトキャンバス</label>
+              <label><input type="radio" name="basemap" value="satellite"> 衛星写真 (Esri)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coordinates Info Banner -->
+        <div id="map-coords-badge" class="coords-badge">
+          <i class="fa-solid fa-location-crosshairs"></i>
+          <span id="coords-text">地図をクリックして座標を取得</span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Spot Registration / Edit Modal -->
+  <div id="spot-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-title"><i class="fa-solid fa-map-pin"></i> スポットデータの登録</h2>
+        <button id="modal-close-btn" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="spot-form" class="modal-body">
+        <input type="hidden" id="spot-id">
+
+        <!-- Coordinates Row -->
+        <div class="form-row coords-row">
+          <div class="form-group flex-1">
+            <label for="spot-lat">緯度 (Latitude) <span class="required">*</span></label>
+            <input type="number" step="any" id="spot-lat" required placeholder="35.6812">
+          </div>
+          <div class="form-group flex-1">
+            <label for="spot-lng">経度 (Longitude) <span class="required">*</span></label>
+            <input type="number" step="any" id="spot-lng" required placeholder="139.7671">
+          </div>
+          <button type="button" id="pick-on-map-btn" class="btn btn-outline btn-self-end" title="地図上で位置を微調整">
+            <i class="fa-solid fa-location-dot"></i> ピン調整
+          </button>
+        </div>
+
+        <!-- Title -->
+        <div class="form-group">
+          <label for="spot-name">スポット名 / 件名 <span class="required">*</span></label>
+          <input type="text" id="spot-name" required placeholder="例: 東京タワー 展望台">
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label for="spot-status">ステータス</label>
+          <select id="spot-status">
+            <option value="wishlist">行きたい</option>
+            <option value="visited" selected>訪問済み</option>
+            <option value="favorite">お気に入り</option>
+          </select>
+        </div>
+
+        <!-- Rating Stars -->
+        <div class="form-group">
+          <label>評価 / 重要度</label>
+          <div class="rating-stars-input" id="rating-stars">
+            <i class="fa-solid fa-star active" data-rating="1"></i>
+            <i class="fa-solid fa-star active" data-rating="2"></i>
+            <i class="fa-solid fa-star active" data-rating="3"></i>
+            <i class="fa-solid fa-star active" data-rating="4"></i>
+            <i class="fa-solid fa-star" data-rating="5"></i>
+          </div>
+          <input type="hidden" id="spot-rating" value="4">
+        </div>
+
+        <!-- Address / Location Note -->
+        <div class="form-group">
+          <label for="spot-address">住所・補足位置情報</label>
+          <input type="text" id="spot-address" placeholder="例: 東京都港区芝公園4-2-8">
+        </div>
+
+        <!-- Notes / Description -->
+        <div class="form-group">
+          <label for="spot-notes">詳細メモ・説明</label>
+          <textarea id="spot-notes" rows="3" placeholder="スポットの特徴、メモ、アクセス方法、作業内容など..."></textarea>
+        </div>
+
+        <!-- Image Upload or Preset -->
+        <div class="form-group">
+          <label>画像添付 / 参照URL</label>
+          <div class="image-input-container">
+            <input type="file" id="spot-image-file" accept="image/*" class="file-input">
+            <input type="url" id="spot-image-url" placeholder="または画像URLを入力 (https://...)">
+          </div>
+          <div id="image-preview-container" class="image-preview-container hidden">
+            <img id="image-preview" src="" alt="プレビュー">
+            <button type="button" id="remove-image-btn" class="btn-remove-img"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="form-group">
+          <label for="spot-tags">タグ (カンマ区切り)</label>
+          <input type="text" id="spot-tags" placeholder="夜景, 駐車場あり, Wi-Fi完了">
+        </div>
+
+        <!-- Form Actions -->
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel-btn" class="btn btn-secondary">キャンセル</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> 保存する</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Spot Detail Drawer / Modal -->
+  <div id="detail-drawer" class="detail-drawer hidden">
+    <div class="drawer-header">
+      <h3 style="font-size: 0.95rem; color: var(--text-primary);"><i class="fa-solid fa-utensils"></i> スポット詳細</h3>
+      <button id="detail-close-btn" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="drawer-body">
+      <div id="detail-image-box" class="detail-image-box hidden">
+        <img id="detail-image" src="" alt="Spot Photo">
+      </div>
+
+      <h2 id="detail-title" class="detail-title">スポットタイトル</h2>
+      
+      <div class="detail-meta-row">
+        <div id="detail-rating-stars" class="rating-stars-display"></div>
+        <span id="detail-status-badge" class="badge">ステータス</span>
+      </div>
+
+      <div class="detail-info-card">
+        <div class="info-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <div>
+            <div class="info-label">座標 (緯度, 経度)</div>
+            <div class="info-value" id="detail-coords-text">35.6812, 139.7671</div>
+          </div>
+          <button id="copy-coords-btn" class="btn btn-sm btn-outline" title="座標をコピー">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+
+        <div class="info-item" id="detail-address-row">
+          <i class="fa-solid fa-map-pin"></i>
+          <div>
+            <div class="info-label">住所・位置メモ</div>
+            <div class="info-value" id="detail-address">住所なし</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <i class="fa-regular fa-clock"></i>
+          <div>
+            <div class="info-label">登録日時</div>
+            <div class="info-value" id="detail-date">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3><i class="fa-regular fa-file-lines"></i> メモ・詳細</h3>
+        <p id="detail-notes" class="detail-notes-text">メモはありません。</p>
+      </div>
+
+      <div class="detail-section" id="detail-tags-section">
+        <h3><i class="fa-solid fa-tags"></i> タグ</h3>
+        <div id="detail-tags-list" class="tags-container"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="drawer-actions">
+        <a id="nav-google-btn" href="#" target="_blank" class="btn btn-outline flex-1">
+          <i class="fa-solid fa-diamond-turn-right"></i> Googleマップで案内
+        </a>
+        <button id="edit-spot-btn" class="btn btn-secondary flex-1">
+          <i class="fa-solid fa-pen-to-square"></i> 編集
+        </button>
+        <button id="delete-spot-btn" class="btn btn-danger flex-1">
+          <i class="fa-solid fa-trash"></i> 削除
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Dialog Modal -->
+  <div id="export-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-file-export"></i> データのエクスポート</h2>
+        <button id="export-close-btn" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="export-desc">保存形式を選択してダウンロードします。</p>
+        <div class="export-options">
+          <button id="export-geojson-btn" class="export-opt-btn">
+            <i class="fa-solid fa-globe"></i>
+            <div>
+              <strong>GeoJSON 形式</strong>
+              <small>GISソフト・Google Earth等で利用可能なスタンダード形式</small>
+            </div>
+          </button>
+          <button id="export-csv-btn" class="export-opt-btn">
+            <i class="fa-solid fa-file-csv"></i>
+            <div>
+              <strong>CSV 形式</strong>
+              <small>Excelやスプレッドシートで閲覧・編集可能</small>
+            </div>
+          </button>
+          <button id="export-json-btn" class="export-opt-btn">
+            <i class="fa-solid fa-code"></i>
+            <div>
+              <strong>JSON バックアップ</strong>
+              <small>GeoSpot Studio 完全バックアップ形式</small>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Leaflet & Heatmap Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- Application Modules -->
+  <script src="js/mockData.js?v=13.0"></script>
+  <script src="js/store.js?v=13.0"></script>
+  <script src="js/map.js?v=13.0"></script>
+  <script src="js/ui.js?v=13.0"></script>
+  <script src="js/app.js?v=13.0"></script>
+
+</body>
+</html>

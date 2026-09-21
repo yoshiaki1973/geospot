@@ -1,0 +1,402 @@
+/* ==========================================================================
+   GeoSpot Studio - Main & Global Styles
+   ========================================================================== */
+
+:root {
+  /* Curry Theme Palette (Rich Dark Curry / Spiced Amber) */
+  --bg-primary: #1a120c;          /* 漆黒のスパイスブラウン */
+  --bg-secondary: #271a11;        /* 濃厚フォンドボーブラウン */
+  --bg-tertiary: #3a2618;         /* ローストカレールー */
+  --bg-glass: rgba(39, 26, 17, 0.88);
+  --bg-glass-card: rgba(26, 18, 12, 0.78);
+  --border-color: rgba(245, 158, 11, 0.2);
+  --border-color-hover: rgba(245, 158, 11, 0.5);
+
+  --text-primary: #fef3c7;        /* サフランゴールド・ウォームクリーム */
+  --text-secondary: #e6cba8;      /* ターメリックベージュ */
+  --text-muted: #a38568;          /* スパイスブラウン */
+
+  --accent-primary: #f59e0b;      /* ターメリックイエローゴールド */
+  --accent-primary-hover: #d97706;
+  --accent-secondary: #ea580c;    /* チリパプリカオレンジ */
+  --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #dc2626 100%);
+  --accent-glow: rgba(245, 158, 11, 0.4);
+
+  --status-success: #10b981;
+  --status-warning: #fbbf24;
+  --status-danger: #ef4444;
+  --status-info: #3b82f6;
+
+  /* Category Colors */
+  --cat-gourmet: #ea580c;
+  --cat-sightseeing: #f59e0b;
+  --cat-business: #3b82f6;
+  --cat-infrastructure: #10b981;
+  --cat-personal: #ec4899;
+  --cat-other: #8b5cf6;
+
+  /* Layout Constants */
+  --header-height: 64px;
+  --sidebar-width: 380px;
+
+  /* Shadows & Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light Theme Variables (Saffron Cream & Golden Curry) */
+body.light-theme {
+  --bg-primary: #fcf6eb;          /* サフランライスクリーム */
+  --bg-secondary: #fffcf7;        /* マイルドカレークリーム */
+  --bg-tertiary: #f5e3ca;         /* スパイスベージュ */
+  --bg-glass: rgba(255, 252, 247, 0.92);
+  --bg-glass-card: rgba(252, 246, 235, 0.85);
+  --border-color: rgba(180, 83, 9, 0.18);
+  --border-color-hover: rgba(217, 119, 6, 0.45);
+
+  --text-primary: #38200d;        /* 濃厚ルーブラウン */
+  --text-secondary: #664121;      /* 焙煎ブラウン */
+  --text-muted: #99704e;
+
+  --shadow-sm: 0 2px 4px rgba(56, 32, 13, 0.08);
+  --shadow-md: 0 4px 12px rgba(56, 32, 13, 0.12);
+  --shadow-lg: 0 10px 25px rgba(56, 32, 13, 0.18);
+}
+
+/* Global Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* App Layout Grid */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Navbar */
+.navbar {
+  height: var(--header-height);
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  z-index: 1000;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+
+.brand-text h1 {
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.brand-text h1 span {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-text .tagline {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+}
+
+/* Search Bar (Geocoder) */
+.search-bar-container {
+  position: relative;
+  width: 380px;
+  max-width: 40vw;
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
+  transition: var(--transition-fast);
+}
+
+.search-bar-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.search-icon {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
+
+.search-bar-container input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.search-bar-container button {
+  background: var(--accent-primary);
+  border: none;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.search-bar-container button:hover {
+  background: var(--accent-primary-hover);
+  transform: scale(1.05);
+}
+
+/* Geocoder Auto-complete dropdown */
+.geocoder-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1100;
+}
+
+.geocoder-item {
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.geocoder-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+}
+
+.geocoder-item i {
+  color: var(--accent-secondary);
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Buttons System */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--border-color-hover);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+}
+
+.btn-danger {
+  background: var(--status-danger);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-danger-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--status-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger-icon:hover {
+  background: var(--status-danger);
+  color: #fff;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.btn-icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-icon:hover {
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 400px;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast.toast-success { border-left: 4px solid var(--status-success); }
+.toast.toast-error { border-left: 4px solid var(--status-danger); }
+.toast.toast-info { border-left: 4px solid var(--status-info); }
+
+.toast i { font-size: 1.1rem; }
+.toast.toast-success i { color: var(--status-success); }
+.toast.toast-error i { color: var(--status-danger); }
+.toast.toast-info i { color: var(--status-info); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(20px) scale(0.95); }
+}
+
+/* Utility Helpers */
+.hidden { display: none !important; }
+.flex-1 { flex: 1; }
